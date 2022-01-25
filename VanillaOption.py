@@ -162,3 +162,4 @@ class VanillaOption:
         d1 = VanillaOption.c_d1(s, k, r, q, sig, t, b)
         d_n_d1 = VanillaOption.d_n(d1)
         return (np.exp(-q * t / b) * s * np.sqrt(t / b) * d_n_d1) / 100
+
