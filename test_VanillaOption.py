@@ -1,7 +1,5 @@
 from VanillaOption import VanillaOption
 
-#Test Call
-
 call = VanillaOption(100, 100, 0.05, 0.01, 30, volatility=0.25)
 print(call.Price)
 print(call.Delta)
