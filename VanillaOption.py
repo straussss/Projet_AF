@@ -1,8 +1,7 @@
-import numpy as np
-from scipy.stats import norm
+from BlackScholes import BlackScholes
 
 
-class VanillaOption:
+class VanillaOption(BlackScholes):
     """
     Annual Basis default 365
     Annual Volatility: 0.16 for 16% annually
@@ -11,155 +10,79 @@ class VanillaOption:
     Maturity in days
 
     Pricing methods:
-    BS --> Black & Scholes
+    BS --> Black & Scholes + Greeks
     """
 
-    def __init__(self, spot: float, strike: int, rate: float, dividend: float, maturity: int,
-                 typ: str = 'C', volatility: float = 0, pricing_method: str = 'BS'):
+    def __init__(self,
+                 spot: float,
+                 strike: float,
+                 rate: float,
+                 dividend: float,
+                 maturity: int,
+                 typ: str = 'C',
+                 volatility: float = 0,
+                 pricing_method: str = 'BS',
+                 annual_basis: int = 365):
+        """
+        :param spot: spot price
+        :param strike: stirke price
+        :param rate: risk free rate 0.05 corresponds to 5%
+        :param dividend: dividend yield 0.01 corresponds to 1%
+        :param maturity: maturity in days
+        :param typ: 'C': Call / 'P': Put
+        :param volatility: volatility 0.16 corresponds to 16%
+        :param pricing_method: 'BS': Black&Scholes
+        """
+        BlackScholes.__init__(self, spot, strike, rate, dividend, maturity, volatility, annual_basis)
         self.__typ = typ
-        self.__spot = spot
-        self.__strike = strike
-        self.__rate = rate
-        self.__dividend = dividend
-        self.__maturity = maturity
-        self.__volatility = volatility
         self.__pricing_method = pricing_method
-        self.__annual_basis = 365
 
     @property
-    def Volatility(self):
-        return self.__volatility
+    def volatility(self) -> float:
+        return self._volatility
 
-    @Volatility.setter
-    def Volatility(self, volatility):
-        self.__volatility = volatility
+    @volatility.setter
+    def volatility(self, volatility):
+        self._volatility = volatility
 
     @property
-    def Price(self):
+    def pricing_method(self) -> str:
+        return self.__pricing_method
+
+    @volatility.setter
+    def volatility(self, pricing_method):
+        self.__pricing_method = pricing_method
+
+    @property
+    def price(self) -> float:
         if self.__pricing_method == "BS":
             if self.__typ == 'C':
-                return VanillaOption.pricing_call_bs(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                                     self.__volatility, self.__maturity, self.__annual_basis)
+                return self.price_call_bs
             if self.__typ == 'P':
-                return VanillaOption.pricing_put_bs(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                                    self.__volatility, self.__maturity, self.__annual_basis)
+                return self.price_put_bs
 
     @property
-    def Delta(self):
+    def delta(self) -> float:
         if self.__pricing_method == "BS":
             if self.__typ == 'C':
-                return VanillaOption.delta_call(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                                self.__volatility, self.__maturity, self.__annual_basis)
+                return self.delta_call_bs
             if self.__typ == 'P':
-                return VanillaOption.delta_put(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                               self.__volatility, self.__maturity, self.__annual_basis)
+                return self.delta_put_bs
 
     @property
-    def Theta(self):
+    def theta(self) -> float:
         if self.__pricing_method == "BS":
             if self.__typ == 'C':
-                return VanillaOption.theta_call(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                                self.__volatility, self.__maturity, self.__annual_basis)
+                return self.theta_call_bs
             if self.__typ == 'P':
-                return VanillaOption.theta_put(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                               self.__volatility, self.__maturity, self.__annual_basis)
+                return self.theta_put_bs
 
     @property
-    def Gamma(self):
+    def gamma(self) -> float:
         if self.__pricing_method == "BS":
-            return VanillaOption.gamma(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                       self.__volatility, self.__maturity, self.__annual_basis)
+            return self.gamma_bs
 
     @property
-    def Vega(self):
+    def vega(self) -> float:
         if self.__pricing_method == "BS":
-            return VanillaOption.vega(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                      self.__volatility, self.__maturity, self.__annual_basis)
-
-    ############################################### BLACK & SCHOLES ####################################################
-    @property
-    def d1(self):
-        return VanillaOption.c_d1(self.__spot, self.__strike, self.__rate, self.__dividend, self.__volatility,
-                                  self.__maturity)
-
-    @property
-    def d2(self):
-        return VanillaOption.c_d2(self.__spot, self.__strike, self.__rate, self.__dividend, self.__volatility,
-                                  self.__maturity)
-
-    @staticmethod
-    def pricing_call_bs(s, k, r, q, sig, t, b=365):
-        d1 = VanillaOption.c_d1(s, k, r, q, sig, t, b)
-        d2 = VanillaOption.c_d2(s, k, r, q, sig, t, b)
-        n_d1 = VanillaOption.n(d1)
-        n_d2 = VanillaOption.n(d2)
-        return s * n_d1 * np.exp(-q * t / b) - k * np.exp(-r * t / b) * n_d2
-
-    @staticmethod
-    def c_d1(s, k, r, q, sig, t, b=365):
-        return (np.log(s / k) + (r - q + 0.5 * (sig ** 2)) * t / b) / (sig * np.sqrt(t / b))
-
-    @staticmethod
-    def c_d2(s, k, r, q, sig, t, b=365):
-        return (np.log(s / k) + (r - q - 0.5 * (sig ** 2)) * t / b) / (sig * np.sqrt(t / b))
-
-    @staticmethod
-    def n(d):
-        return norm.cdf(d, 0, 1)
-
-    @staticmethod
-    def d_n(d):
-        return norm.pdf(d, 0, 1)
-
-    @staticmethod
-    def pricing_put_bs(s, k, r, q, sig, t, b=365):
-        d1 = VanillaOption.c_d1(s, k, r, q, sig, t, b)
-        d2 = VanillaOption.c_d2(s, k, r, q, sig, t, b)
-        n_md1 = VanillaOption.n(-d1)
-        n_md2 = VanillaOption.n(-d2)
-        return k * np.exp(-r * t / b) * n_md2 - s * n_md1 * np.exp(-q * t / b)
-
-    @staticmethod
-    def delta_call(s, k, r, q, sig, t, b=365):
-        d1 = VanillaOption.c_d1(s, k, r, q, sig, t, b)
-        n_d1 = VanillaOption.n(d1)
-        return np.exp(-q * t / b) * n_d1
-
-    @staticmethod
-    def delta_put(s, k, r, q, sig, t, b=365):
-        d1 = VanillaOption.c_d1(s, k, r, q, sig, t, b)
-        n_d1 = VanillaOption.n(d1)
-        return np.exp(-q * t / b) * (n_d1 - 1)
-
-    @staticmethod
-    def theta_call(s, k, r, q, sig, t, b=365):
-        d1 = VanillaOption.c_d1(s, k, r, q, sig, t, b)
-        d2 = VanillaOption.c_d2(s, k, r, q, sig, t, b)
-        n_d1 = VanillaOption.n(d1)
-        n_d2 = VanillaOption.n(d2)
-        d_n_d1 = VanillaOption.d_n(d1)
-        return (-np.exp(-q * t / b) * s * d_n_d1 * sig / (2 * np.sqrt(t / b)) + q * np.exp(-q * t / b) * s * n_d1
-                - r * np.exp(-r * t / b) * k * n_d2) / b
-
-    @staticmethod
-    def theta_put(s, k, r, q, sig, t, b=365):
-        d1 = VanillaOption.c_d1(s, k, r, q, sig, t, b)
-        d2 = VanillaOption.c_d2(s, k, r, q, sig, t, b)
-        n_md1 = VanillaOption.n(-d1)
-        n_md2 = VanillaOption.n(-d2)
-        d_n_d1 = VanillaOption.d_n(d1)
-        return (-np.exp(-q * t / b) * s * d_n_d1 * sig / (2 * np.sqrt(t / b)) - q * np.exp(-q * t / b) * s * n_md1
-                + r * np.exp(-r * t * b) * k * n_md2) / b
-
-    @staticmethod
-    def gamma(s, k, r, q, sig, t, b=365):
-        d1 = VanillaOption.c_d1(s, k, r, q, sig, t, b)
-        d_n_d1 = VanillaOption.d_n(d1)
-        return (np.exp(-q * t / b) / (s * sig * np.sqrt(t / b))) * d_n_d1
-
-    @staticmethod
-    def vega(s, k, r, q, sig, t, b=365):
-        d1 = VanillaOption.c_d1(s, k, r, q, sig, t, b)
-        d_n_d1 = VanillaOption.d_n(d1)
-        return (np.exp(-q * t / b) * s * np.sqrt(t / b) * d_n_d1) / 100
-
+            return self.vega_bs

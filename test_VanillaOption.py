@@ -1,18 +1,28 @@
 from VanillaOption import VanillaOption
 
-#Test Call
-
 call = VanillaOption(100, 100, 0.05, 0.01, 30, volatility=0.25)
-print(call.Price)
-print(call.Delta)
-print(call.Gamma)
-print(call.Theta)
-print(call.Vega)
+print("### Test Call")
+print(f'Price = {call.price}')
+print(f'Delta = {call.delta}')
+print(f'Gamma = {call.gamma}')
+print(f'Theta = {call.theta}')
+print(f'Vega = {call.vega}')
 
 put = VanillaOption(100, 100, 0.05, 0.01, 30, typ='P', volatility=0.25)
-print(put.Price)
-print(put.Delta)
-print(put.Gamma)
-print(put.Theta)
-print(put.Vega)
+print("\n### Test Put")
+print(f'Price = {put.price}')
+print(f'Delta = {put.delta}')
+print(f'Gamma = {put.gamma}')
+print(f'Theta = {put.theta}')
+print(f'Vega = {put.vega}')
+
+put.volatility = 0.16
+print("\n### Test Put new vol")
+print(f'Volatility = {put.volatility}')
+print(f'Price = {put.price}')
+print(f'Delta = {put.delta}')
+print(f'Gamma = {put.gamma}')
+print(f'Theta = {put.theta}')
+print(f'Vega = {put.vega}')
+
 
