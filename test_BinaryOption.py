@@ -1,22 +1,13 @@
 from BinaryOption import BinaryOption
-from VanillaOption import VanillaOption
 
-call = VanillaOption(100, 100, 0.05, 0.01, 30, volatility=0.25)
-digital_call = BinaryOption(100, 100, 0.05, 0.01, 30, volatility=0.25, payoff=1)
+digital_call = BinaryOption(100, 100, 0.05, 0.01, 30, delta_max=1, volatility=0.25, payoff=1)
 
-#Test inheritance
-print("### Test inheritance")
-print(f'Price = {digital_call.Price == call.Price}')
-print(f'Delta = {digital_call.Delta == call.Delta}')
-print(f'Gamma = {digital_call.Gamma == call.Gamma}')
-print(f'Theta = {digital_call.Theta == call.Theta}')
-print(f'Vega = {digital_call.Vega == call.Vega}')
+# Test digital call
+print("### Test digital call")
+print(f'Payoff = {digital_call.payoff}')
+print(f'Price_digital_call = {digital_call.price_digital}')
 
-# Miscleanous
-print("\n\n### Miscleanous")
-print(f'Payoff = {digital_call.Payoff}')
-digital_call.Payoff = 10
-print(f'Payoff modified = {digital_call.Payoff}')
-print(f'Payoff modified = {digital_call.a}')
-#print(f'Price_call_digital = {digital_call.Price_call_digital}')
-
+digital_call.payoff = 2
+print(f'Payoff modified = {digital_call.payoff}')
+print(f'Price_digital_call = {digital_call.price_digital}')
+#print(f'Price_bull_spread = {digital_call.price_bull_spread}')

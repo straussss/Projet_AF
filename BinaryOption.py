@@ -1,182 +1,153 @@
 import numpy as np
 from VanillaOption import VanillaOption
+from BlackScholes import BlackScholes
 
 
-class BinaryOption(VanillaOption):
+class BinaryOption(BlackScholes):
     def __init__(self,
                  spot: float,
                  strike: int,
                  rate: float,
                  dividend: float,
                  maturity: int,
-                 typ: str = 'C',
                  volatility: float = 0,
+                 typ: str = 'C',
+                 rep: str = 'C',
                  payoff: float = 1,
                  delta_max: float = 1,
-                 pricing_method: str = 'BS'):
-        super().__init__(spot, strike, rate, dividend, maturity, typ, volatility, pricing_method)
+                 pricing_method: str = 'BS',
+                 annual_basis: int = 365):
+        BlackScholes.__init__(self, spot, strike, rate, dividend, maturity, volatility, annual_basis)
         self.__payoff = payoff
         self.__delta_max = delta_max
-
-
-    @property
-    def a(self) -> float:
-        return self.__SecondClass__pricing_method
+        self.__pricing_method = pricing_method
+        self.__typ = typ
+        self.__rep = rep
 
     @property
-    def Payoff(self) -> float:
+    def volatility(self) -> float:
+        return self._volatility
+
+    @volatility.setter
+    def volatility(self, volatility):
+        self._volatility = volatility
+
+    @property
+    def payoff(self) -> float:
         return self.__payoff
 
-    @Payoff.setter
-    def Payoff(self, payoff):
+    @payoff.setter
+    def payoff(self, payoff):
         self.__payoff = payoff
 
     @property
-    def Delta_max(self) -> float:
+    def delta_max(self) -> float:
         return self.__delta_max
 
-    @Delta_max.setter
-    def Delta_max(self, delta_max):
+    @delta_max.setter
+    def delta_max(self, delta_max):
         self.__delta_max = delta_max
 
     @property
-    def Price_call_digital(self) -> float:
-        if self.Pricing_method == "BS":
-            return BinaryOption.pricing_call_digital_bs(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                                        self.__volatility, self.__maturity, self.__annual_basis,
-                                                        self.__payoff)
+    def pricing_method(self) -> str:
+        return self.__pricing_method
+
+    @pricing_method.setter
+    def pricing_method(self, pricing_method):
+        self.__pricing_method = pricing_method
 
     @property
-    def Price_put_digital(self) -> float:
-        if self.Pricing_method == "BS":
-            return BinaryOption.pricing_put_digital_bs(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                                       self.__volatility, self.__maturity, self.__annual_basis,
-                                                       self.__payoff)
-
-    @property
-    def Price_call_spread(self) -> float:
-        if self.Pricing_method == "BS":
-            return BinaryOption.pricing_call_digital_bs(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                                        self.__volatility, self.__maturity, self.__annual_basis,
-                                                        self.__payoff)
-
-    @property
-    def Price_put_spread(self) -> float:
-        if self.Pricing_method == "BS":
-            return BinaryOption.pricing_put_digital_bs(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                                       self.__volatility, self.__maturity, self.__annual_basis,
-                                                       self.__payoff)
-
-    @property
-    def Delta_th(self) -> float:
-        if self.Pricing_method == "BS":
+    def price_digital(self) -> float:
+        if self.pricing_method == "BS":
             if self.__typ == 'C':
-                return BinaryOption.delta_digital_call_bs(self.__spot, self.__strike, self.__rate, self.__dividend,
-                                                          self.__volatility, self.__maturity, self.__annual_basis)
+                return self.pricing_call_digital_bs()
+            if self.__typ == 'P':
+                return self.pricing_put_digital_bs()
 
     @property
-    def Delta_rp(self) -> float:
-        if self.Pricing_method == "BS":
+    def delta_th(self) -> float:
+        if self.pricing_method == "BS":
             if self.__typ == 'C':
-                return self.delta_bull_call_spread_bs()
+                return self.delta_digital_call_bs()
+
+    @property
+    def price_bull_spread(self) -> float:
+        if self.pricing_method == "BS":
+            if self.__rep == 'C':
+                return (self.rep_option_km().price - self.rep_option_k().price) * self.delta_max
+            if self.__rep == 'P':
+                pass
+
+    @property
+    def price_bear_spread(self) -> float:
+        if self.pricing_method == "BS":
+            if self.__rep == 'C':
+                return (self.rep_option_k().price - self.rep_option_km().price) * self.delta_max
+            if self.__rep == 'P':
+                pass
+
+    @property
+    def delta_rp(self) -> float:
+        if self.pricing_method == "BS":
+            if self.__typ == 'C':
+                return 0.01
 
     ############################################### BLACK & SCHOLES ####################################################
 
     ############################################### THEORICAL
-    @staticmethod
-    def pricing_call_digital_bs(s: float, k: float, r: float, q: float, sig: float, t: int, b: int = 365,
-                                p: float = 1) -> float:
+
+    def pricing_call_digital_bs(self) -> float:
         """
-        :param s: spot price
-        :param k: stirke price
-        :param r: risk free rate 0.05 corresponds to 5%
-        :param q: dividend yield 0.01 corresponds to 1%
-        :param sig: volatility 0.16 corresponds to 16%
-        :param t: maturity in days
-        :param b: annual basis 365 days per year
-        :param p: payoff
         :return: the price of a digital call with the BS model (Bull digital)
         """
-        d2 = VanillaOption.c_d2(s, k, r, q, sig, t, b)
-        n_d2 = VanillaOption.n(d2)
+        p = self.__payoff
+        r = self.rate
+        t = self.maturity
+        b = self.annual_basis
+        n_d2 = self.n_d2
         return p * np.exp(-r * t / b) * n_d2
 
-    @staticmethod
-    def pricing_put_digital_bs(s: float, k: float, r: float, q: float, sig: float, t: int, b: int = 365,
-                               p: float = 1) -> float:
+    def pricing_put_digital_bs(self) -> float:
         """
-        :param s: spot price
-        :param k: stirke price
-        :param r: risk free rate 0.05 corresponds to 5%
-        :param q: dividend yield 0.01 corresponds to 1%
-        :param sig: volatility 0.16 corresponds to 16%
-        :param t: maturity in days
-        :param b: annual basis 365 days per year
-        :param p: payoff
         :return: the price of a digital put with the BS model (Bear digital)
         """
-        d2 = VanillaOption.c_d2(s, k, r, q, sig, t, b)
-        n_md2 = VanillaOption.n(-d2)
+        p = self.__payoff
+        r = self.__rate
+        t = self.__maturity
+        b = self.__annual_basis
+        n_md2 = 1 - self.n_d2
         return p * np.exp(-r * t / b) * n_md2
 
-    @staticmethod
-    def delta_digital_call_bs(s: float, k: float, r: float, q: float, sig: float, t: int, b=365) -> float:
+    def delta_digital_call_bs(self) -> float:
         """
-        :param s: spot price
-        :param k: stirke price
-        :param r: risk free rate 0.05 corresponds to 5%
-        :param q: dividend yield 0.01 corresponds to 1%
-        :param sig: volatility 0.16 corresponds to 16%
-        :param t: maturity in days
-        :param b: annual basis 365 days per year
         :return: the delta of a digital call with the BS model
         """
-        d2 = VanillaOption.c_d2(s, k, r, q, sig, t, b)
-        d_n_d2 = VanillaOption.d_n(d2)
+        s = self.__spot
+        r = self.__rate
+        t = self.__maturity
+        sig = self._volatility
+        b = self.__annual_basis
+        d_n_d2 = self.d_n_d2
         return (np.exp(-r * t / b) * d_n_d2)/(sig * s * np.sqrt(t / b))
 
     ############################################### REPLICATION
+    def rep_option_k(self):
+        return VanillaOption(self.spot,
+                             self.stirke,
+                             self.rate,
+                             self.dividend,
+                             self.maturity,
+                             self.__typ,
+                             self.volatility)
 
-    @staticmethod
-    def pricing_bull_call_spread_bs(s: float, k: float, r: float, q: float, sig: float, t: int,
-                                    p: float = 1, delta_max: int = 1) -> float:
-        """
-        :param s: spot price
-        :param k: stirke price
-        :param r: risk free rate 0.05 corresponds to 5%
-        :param q: dividend yield 0.01 corresponds to 1%
-        :param sig: volatility 0.16 corresponds to 16%
-        :param t: maturity in days
-        :param p: payoff
-        :param delta_max: maximum delta possible for the position
-        :return: the price of a n delta_max call spread with a spread of (payoff/delta_max)
-        """
-        l_call = VanillaOption.pricing_call_bs(s, k - (p / delta_max), r, q, sig, t)
-        s_call = VanillaOption.pricing_call_bs(s, k, r, q, sig, t)
-        return (l_call - s_call) * delta_max
+    def rep_option_km(self):
+        return VanillaOption(self.spot,
+                             self.stirke - (self.payoff / self.delta_max),
+                             self.rate,
+                             self.dividend,
+                             self.maturity,
+                             self.__typ,
+                             self.volatility)
 
-    def delta_bull_call_spread_bs(self) -> float:
-        return VanillaOption.delta_call_bs(self.__spot, self.__strike - (self.__payoff/self.__delta_max),
-                                           self.__rate, self.__dividend, self.__volatility, self.__maturity) -\
-                VanillaOption.delta_call_bs(self.__spot, self.__strike, self.__rate, self.__dividend, self.__volatility,
-                                            self.__maturity)
-
-    @staticmethod
-    def pricing_bear_call_spread_bs(s: float, k: float, r: float, q: float, sig: float, t: int,
-                                    p: float = 1, delta_max: int = 1) -> float:
-        """
-        :param s: spot price
-        :param k: stirke price
-        :param r: risk free rate 0.05 corresponds to 5%
-        :param q: dividend yield 0.01 corresponds to 1%
-        :param sig: volatility 0.16 corresponds to 16%
-        :param t: maturity in days
-        :param p: payoff
-        :param delta_max: maximum delta possible for the position
-        :return: the price of a n delta_max put spread with a spread of (payoff/delta_max)
-        """
-        l_call = VanillaOption.pricing_call_bs(s, k, r, q, sig, t)
-        s_call = VanillaOption.pricing_call_bs(s, k - (p / delta_max), r, q, sig, t)
-        return (l_call - s_call) * delta_max
 
 
