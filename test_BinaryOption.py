@@ -17,4 +17,6 @@ print("\n\n### Miscleanous")
 print(f'Payoff = {digital_call.Payoff}')
 digital_call.Payoff = 10
 print(f'Payoff modified = {digital_call.Payoff}')
+print(f'Payoff modified = {digital_call.a}')
+#print(f'Price_call_digital = {digital_call.Price_call_digital}')
 

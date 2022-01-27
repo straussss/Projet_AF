@@ -14,10 +14,14 @@ class BinaryOption(VanillaOption):
                  payoff: float = 1,
                  delta_max: float = 1,
                  pricing_method: str = 'BS'):
-        VanillaOption.__init__(self, spot, strike, rate, dividend, maturity, typ, volatility=volatility,
-                               pricing_method=pricing_method)
+        super().__init__(spot, strike, rate, dividend, maturity, typ, volatility, pricing_method)
         self.__payoff = payoff
         self.__delta_max = delta_max
+
+
+    @property
+    def a(self) -> float:
+        return self.__SecondClass__pricing_method
 
     @property
     def Payoff(self) -> float:
@@ -37,42 +41,42 @@ class BinaryOption(VanillaOption):
 
     @property
     def Price_call_digital(self) -> float:
-        if self.__pricing_method == "BS":
+        if self.Pricing_method == "BS":
             return BinaryOption.pricing_call_digital_bs(self.__spot, self.__strike, self.__rate, self.__dividend,
                                                         self.__volatility, self.__maturity, self.__annual_basis,
                                                         self.__payoff)
 
     @property
     def Price_put_digital(self) -> float:
-        if self.__pricing_method == "BS":
+        if self.Pricing_method == "BS":
             return BinaryOption.pricing_put_digital_bs(self.__spot, self.__strike, self.__rate, self.__dividend,
                                                        self.__volatility, self.__maturity, self.__annual_basis,
                                                        self.__payoff)
 
     @property
     def Price_call_spread(self) -> float:
-        if self.__pricing_method == "BS":
+        if self.Pricing_method == "BS":
             return BinaryOption.pricing_call_digital_bs(self.__spot, self.__strike, self.__rate, self.__dividend,
                                                         self.__volatility, self.__maturity, self.__annual_basis,
                                                         self.__payoff)
 
     @property
     def Price_put_spread(self) -> float:
-        if self.__pricing_method == "BS":
+        if self.Pricing_method == "BS":
             return BinaryOption.pricing_put_digital_bs(self.__spot, self.__strike, self.__rate, self.__dividend,
                                                        self.__volatility, self.__maturity, self.__annual_basis,
                                                        self.__payoff)
 
     @property
     def Delta_th(self) -> float:
-        if self.__pricing_method == "BS":
+        if self.Pricing_method == "BS":
             if self.__typ == 'C':
                 return BinaryOption.delta_digital_call_bs(self.__spot, self.__strike, self.__rate, self.__dividend,
                                                           self.__volatility, self.__maturity, self.__annual_basis)
 
     @property
     def Delta_rp(self) -> float:
-        if self.__pricing_method == "BS":
+        if self.Pricing_method == "BS":
             if self.__typ == 'C':
                 return self.delta_bull_call_spread_bs()
 
