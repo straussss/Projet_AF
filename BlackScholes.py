@@ -37,7 +37,7 @@ class BlackScholes:
 
     @property
     def rate(self) -> float:
-        return self.__strike
+        return self.__rate
 
     @property
     def dividend(self) -> float:
@@ -211,4 +211,3 @@ class BlackScholes:
         b = self.__annual_basis
         d_n_d1 = self.d_n_d1
         return (np.exp(-q * t / b) * s * np.sqrt(t / b) * d_n_d1) / 100
-

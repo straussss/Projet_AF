@@ -57,6 +57,10 @@ class BinaryOption(BlackScholes):
         self.__pricing_method = pricing_method
 
     @property
+    def strike_overh(self):
+        return self.stirke - (self.payoff / self.delta_max)
+
+    @property
     def price_digital(self) -> float:
         if self.pricing_method == "BS":
             if self.__typ == 'C':
@@ -107,6 +111,7 @@ class BinaryOption(BlackScholes):
         n_d2 = self.n_d2
         return p * np.exp(-r * t / b) * n_d2
 
+
     def pricing_put_digital_bs(self) -> float:
         """
         :return: the price of a digital put with the BS model (Bear digital)
@@ -142,7 +147,7 @@ class BinaryOption(BlackScholes):
 
     def rep_option_km(self):
         return VanillaOption(self.spot,
-                             self.stirke - (self.payoff / self.delta_max),
+                             self.strike_overh,
                              self.rate,
                              self.dividend,
                              self.maturity,

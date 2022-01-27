@@ -49,8 +49,8 @@ class VanillaOption(BlackScholes):
     def pricing_method(self) -> str:
         return self.__pricing_method
 
-    @volatility.setter
-    def volatility(self, pricing_method):
+    @pricing_method.setter
+    def pricing_method(self, pricing_method):
         self.__pricing_method = pricing_method
 
     @property
