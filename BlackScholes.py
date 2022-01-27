@@ -99,6 +99,7 @@ class BlackScholes:
     def d_n_d2(self) -> float:
         return norm.pdf(self.d2, 0, 1)
 
+    ##################################################### VANILLA ######################################################
     @property
     def price_call_bs(self) -> float:
         """
@@ -211,3 +212,40 @@ class BlackScholes:
         b = self.__annual_basis
         d_n_d1 = self.d_n_d1
         return (np.exp(-q * t / b) * s * np.sqrt(t / b) * d_n_d1) / 100
+
+    ##################################################### BINARY #######################################################
+    def price_call_digital_bs(self, payoff) -> float:
+        """
+        :return: the price of a digital call with the BS model (Bull digital)
+        """
+        p = payoff
+        r = self.rate
+        t = self.maturity
+        b = self.annual_basis
+        n_d2 = self.n_d2
+        return p * np.exp(-r * t / b) * n_d2
+
+    def price_put_digital_bs(self, payoff) -> float:
+        """
+        :return: the price of a digital put with the BS model (Bear digital)
+        """
+        p = payoff
+        r = self.__rate
+        t = self.__maturity
+        b = self.__annual_basis
+        n_md2 = 1 - self.n_d2
+        return p * np.exp(-r * t / b) * n_md2
+
+    @property
+    def delta_digital_call_bs(self) -> float:
+        """
+        :return: the delta of a digital call with the BS model
+        """
+        s = self.spot
+        r = self.rate
+        t = self.maturity
+        sig = self._volatility
+        b = self.annual_basis
+        d_n_d2 = self.d_n_d2
+        return (np.exp(-r * t / b) * d_n_d2)/(sig * s * np.sqrt(t / b))
+
