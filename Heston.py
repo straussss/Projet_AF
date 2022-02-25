@@ -110,14 +110,10 @@ class Heston:
     ################################################### MONTE CARLO ####################################################
 
     @property
-    def W(self) -> tuple:
+    def mc_paths(self) -> np.matrix:
         MU = np.array([0, 0])
         COV = np.matrix([[1, self.rho], [self.rho, 1]])
         W = multivariate_normal.rvs(mean=MU, cov=COV, size=(self.paths, self.steps-1))
-        return W, W[:, 0], W[:, 1]
-    
-    @property
-    def mc_paths(self) -> np.matrix:
         S = np.zeros((self.paths, self.steps))
         S[:, 0] = self.spot
         V = np.zeros((self.paths, self.steps))
