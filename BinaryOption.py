@@ -1,4 +1,3 @@
-import numpy as np
 from VanillaOption import VanillaOption
 from BlackScholes import BlackScholes
 
@@ -57,8 +56,8 @@ class BinaryOption(BlackScholes):
         self.__pricing_method = pricing_method
 
     @property
-    def strike_overh(self):
-        return self.stirke - (self.payoff / self.delta_max)
+    def overhedge_spread(self):
+        return self.payoff / self.delta_max
 
     @property
     def price_digital(self) -> float:
@@ -78,15 +77,11 @@ class BinaryOption(BlackScholes):
     def price_spread(self) -> float:
         if self.pricing_method == "BS":
             if self.__typ == 'C': #Bull Spread
-                if self.__rep == 'C':
-                    return (self.rep_option_km().price - self.rep_option_k().price) * self.delta_max
-                if self.__rep == 'P':
-                    pass
-            if self.__typ == 'P':
-                if self.__rep == 'C':
-                    return (self.rep_option_k().price - self.rep_option_km().price) * self.delta_max
-                if self.__rep == 'P':
-                    pass
+                print(f'HERE km: {self.rep_option_km("Bull").price}')
+                print(f'HERE k: {self.rep_option_k().price}')
+                return (self.rep_option_km('Bull').price - self.rep_option_k().price) * self.delta_max
+            if self.__typ == 'P': #Bear Sprad
+                return (self.rep_option_km('Bear').price - self.rep_option_k().price) * self.delta_max
 
     @property
     def delta_rp(self) -> float:
@@ -97,21 +92,27 @@ class BinaryOption(BlackScholes):
     ############################################### REPLICATION
     def rep_option_k(self):
         return VanillaOption(self.spot,
-                             self.stirke,
+                             self.strike,
                              self.rate,
                              self.dividend,
                              self.maturity,
-                             self.__typ,
+                             self.__rep,
                              self.volatility)
 
-    def rep_option_km(self):
+    def rep_option_km(self, b):
+        if b == "Bear":
+            b = self.strike + self.overhedge_spread
+        elif b == "Bull":
+            b = self.strike - self.overhedge_spread
         return VanillaOption(self.spot,
-                             self.strike_overh,
+                             b,
                              self.rate,
                              self.dividend,
                              self.maturity,
-                             self.__typ,
+                             self.__rep,
                              self.volatility)
+
+
 
 
 

@@ -25,7 +25,7 @@ class VanillaOption(BlackScholes):
                  annual_basis: int = 365):
         """
         :param spot: spot price
-        :param strike: stirke price
+        :param strike: strike price
         :param rate: risk free rate 0.05 corresponds to 5%
         :param dividend: dividend yield 0.01 corresponds to 1%
         :param maturity: maturity in days
