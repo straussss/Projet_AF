@@ -13,7 +13,7 @@ class BlackScholes:
                  annual_basis: int = 365):
         """
         :param spot: spot price
-        :param strike: stirke price
+        :param strike: strike price
         :param rate: risk free rate 0.05 corresponds to 5%
         :param dividend: dividend yield 0.01 corresponds to 1%
         :param maturity: maturity in days
@@ -32,7 +32,7 @@ class BlackScholes:
         return self.__spot
 
     @property
-    def stirke(self) -> float:
+    def strike(self) -> float:
         return self.__strike
 
     @property
@@ -234,7 +234,7 @@ class BlackScholes:
         t = self.__maturity
         b = self.__annual_basis
         n_md2 = 1 - self.n_d2
-        return p * np.exp(-r * t / b) * n_md2
+        return p * np.exp(-r * t / b) * n_md2 #ATTENTION correction skew*vega
 
     @property
     def delta_digital_call_bs(self) -> float:
@@ -247,5 +247,5 @@ class BlackScholes:
         sig = self._volatility
         b = self.annual_basis
         d_n_d2 = self.d_n_d2
-        return (np.exp(-r * t / b) * d_n_d2)/(sig * s * np.sqrt(t / b))
+        return (np.exp(-r * t / b) * d_n_d2)/(sig * s * np.sqrt(t / b)) #ATTENTION correction skew*vega
 
