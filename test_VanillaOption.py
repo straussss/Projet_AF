@@ -24,5 +24,3 @@ print(f'Delta = {put.delta}')
 print(f'Gamma = {put.gamma}')
 print(f'Theta = {put.theta}')
 print(f'Vega = {put.vega}')
-
-#yo

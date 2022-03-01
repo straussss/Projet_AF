@@ -24,6 +24,10 @@ class BinaryOption(BlackScholes):
         self.__rep = rep
 
     @property
+    def typ(self) -> str:
+        return self.__typ
+
+    @property
     def volatility(self) -> float:
         return self._volatility
 
