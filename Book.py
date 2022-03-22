@@ -33,7 +33,7 @@ class Book:
         return book
 
     def report(self):
-        for date in self.book:
+        for i, date in enumerate(self.book):
             columns = ['Type', 'Position', 'Payoff', 'Spot', 'Strike', 'Interest Rate (%)', 'Dividend Yield (%)',
                            'Implied Volatility (%)', 'Maturity T (minuts)']
             index = [f"Opt {i+1}" for i in range(len(self.book[date]))]
@@ -49,6 +49,6 @@ class Book:
                 df.loc[f"Opt {i + 1}", 'Implied Volatility (%)'] = self.book[date][i].volatility
                 df.loc[f"Opt {i + 1}", 'Maturity T (minuts)'] = self.book[date][i].maturity
 
-            df.to_csv(f'Report/{date}.csv')
+            df.to_csv(f'Report\{i}.csv')
 
 
